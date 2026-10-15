@@ -17,7 +17,6 @@ type Client = {
     rating: number | null;
     reviews: number | null;
     reason: string;
-    websiteChecked: string;
     called: string;
     outcome: string;
     notes: string;
@@ -68,7 +67,6 @@ const emptyClient = (): Client => ({
     rating: null,
     reviews: null,
     reason: "",
-    websiteChecked: "",
     called: "",
     outcome: "",
     notes: "",
