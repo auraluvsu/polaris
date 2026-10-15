@@ -1,19 +1,12 @@
 import { supabase } from "./supabaseClient";
 import { seedClients, seedReadme } from "./seedData";
 
-// Same cleanup the old local loader applied to the guide rows.
+// Drops the title row and the section headings (rows with no body) from the guide.
 const seedReadmeItems = () =>
     seedReadme
         .slice(1)
         .filter((row) => row.length > 1)
-        .map((row) => ({ title: row[0], body: row[1] ?? "" }))
-        .filter((item) => !["Website checked", "Website status"].includes(item.title))
-        .map((item) => ({
-            ...item,
-            body: item.body
-                .replace("Website checked?, ", "")
-                .replace("Website checked? = No site | ", ""),
-        }));
+        .map((row) => ({ title: row[0], body: row[1] ?? "" }));
 
 // Copies the seed clients and guide rows into Supabase. Refuses to run if either
 // table already has rows, so it cannot duplicate data. Call it once, while signed in.

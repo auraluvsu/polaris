@@ -1202,10 +1202,10 @@ export const seedReadme = [
     ["Isleworth call list"],
     ["How to use"],
     [
-        "Yellow columns",
-        "Fill these in as you go: Website checked?, Called?, Outcome, Follow-up date, Notes. Dropdowns are built in.",
+        "Fill in as you go",
+        "Open a client's record on the Call list to set Called?, Outcome, Amount paid and Notes. Called? and Outcome are dropdowns. Pipeline stages unlock one at a time, so finish each step before the next.",
     ],
-    ["Priority A", "Your three picks from earlier."],
+    ["Priority A", "Your three picks."],
     [
         "Priority B",
         "Micro-businesses: usually a mobile number, owner-run, or few reviews. These are the most likely to have no proper site.",
@@ -1216,12 +1216,12 @@ export const seedReadme = [
     ],
     [
         "Example of a filled row",
-        "Website checked? = No site | Called? = Yes | Outcome = Send mockup | Follow-up date = 21 Oct 2026 | Notes = Owner Sam, wants to see it Thursday",
+        "Called? = Yes | Outcome = Send mockup | Notes = Owner Sam, wants to see it Thursday",
     ],
     ["Important caveats"],
     [
         "Website status",
-        "Not verified. Google's data had no website field, so 'Why they're on the list' is a guess from signals like mobile numbers and review counts. Spend 20 seconds per business searching their name plus Isleworth, then mark the dropdown.",
+        "Not verified. Google's data had no website field, so 'Why they're on the list' is a guess from signals like mobile numbers and review counts. Spend 20 seconds per business searching their name plus Isleworth before calling. If they already have a proper site, say so in Notes.",
     ],
     [
         "Phone numbers",
@@ -1235,11 +1235,4 @@ export const seedReadme = [
         "Chains left out",
         "Chains and multi-branch outfits (TK Maxx, Home Bargains, Ballucci, Gail's, Rada, Feather & Heart, Man vs Food and similar) were excluded.",
     ],
-    ["Progress"],
-    ["Businesses on the list", "57"],
-    ["Website checked", "0"],
-    ["Confirmed no own site", "0"],
-    ["Calls made (Yes)", "0"],
-    ["Interested or mockup requested", "0"],
-    ["Conversion (of calls made)", "0"],
 ] as const;

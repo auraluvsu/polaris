@@ -384,8 +384,8 @@ export default function App() {
                 <div className="sidebar-note">
                     <span className="status-dot" />
                     <div>
-                        <strong>Saved locally</strong>
-                        <p>Your edits stay in this browser.</p>
+                        <strong>Supabase</strong>
+                        <p>Changes are saved to your database.</p>
                     </div>
                 </div>
             </aside>
@@ -952,7 +952,7 @@ function ReadmePage({
                             <h2>Turn local conversations into lasting clients.</h2>
                             <p>
                                 Start with priority A, verify each business online, then keep every
-                                call and follow-up recorded in one place.
+                                call and outcome recorded in one place.
                             </p>
                         </div>
                     </div>

@@ -17,11 +17,10 @@ This app uses Supabase with Google OAuth for authentication. Follow these steps 
    - Create a new project
    - Enable the Google+ API
    - Create an OAuth 2.0 credential (Web application)
-   - Add authorized redirect URIs:
-     - `https://[your-project-id].supabase.co/auth/v1/callback`
-     - `http://localhost:8443/auth/v1/callback` (for local development)
+   - Add the authorized redirect URI: `https://[your-project-id].supabase.co/auth/v1/callback`
    - Copy the Client ID and Client Secret
 4. Paste these into the Google provider settings in Supabase
+5. Go to **Authentication** → **URL Configuration** and add `http://localhost:8443` to the **Redirect URLs** (the app sends the user back to its own origin after sign-in)
 
 ## 3. Configure Environment Variables
 
