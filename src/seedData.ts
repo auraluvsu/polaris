@@ -65,7 +65,6 @@ export const seedClients = [
     {
         priority: "B",
         business: "Hughie's Barber Shop",
-        category: "Barber",
         address: "4 The Pavement, South St, Isleworth TW7 7AJ",
         phone: "020 8758 1180",
         rating: 4.5,
@@ -87,7 +86,6 @@ export const seedClients = [
     {
         priority: "B",
         business: "The Custom Chop Shop",
-        category: "Barber",
         address: "20B St John's Rd, Isleworth TW7 6NW",
         phone: "07904 706695",
         rating: 4.5,
@@ -109,7 +107,6 @@ export const seedClients = [
     {
         priority: "B",
         business: "Prime West Cuts",
-        category: "Barber",
         address: "197 Twickenham Rd, Isleworth TW7 6AA",
         phone: "07863 083264",
         rating: 4.9,
@@ -131,7 +128,6 @@ export const seedClients = [
     {
         priority: "B",
         business: "Syon Styles",
-        category: "Barber",
         address: "5 Spur Rd, Isleworth TW7 5BD",
         phone: "07445 369880",
         rating: 4.8,
@@ -153,7 +149,6 @@ export const seedClients = [
     {
         priority: "B",
         business: "Fadez n Cutz",
-        category: "Barber",
         address: "155 Thornbury Rd, Osterley TW7 4QG",
         phone: "07908 522577",
         rating: 4.6,
@@ -175,7 +170,6 @@ export const seedClients = [
     {
         priority: "B",
         business: "Boys2Men",
-        category: "Barber",
         address: "331 London Rd, Isleworth TW7 5XF",
         phone: "07392 171711",
         rating: 4.7,
@@ -197,7 +191,6 @@ export const seedClients = [
     {
         priority: "B",
         business: "Glow Unisex Hair Specialist",
-        category: "Hair salon",
         address: "20C St John's Rd, Isleworth TW7 6NW",
         phone: "020 8560 5508",
         rating: 4.8,
@@ -219,7 +212,6 @@ export const seedClients = [
     {
         priority: "B",
         business: "My Salon",
-        category: "Hair salon",
         address: "18A St John's Rd, Isleworth TW7 6NW",
         phone: "07521 216695",
         rating: 4.8,

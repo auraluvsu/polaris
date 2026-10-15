@@ -2,29 +2,22 @@ import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "re
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "./supabaseClient";
 import Login from "./Login";
-import { seedClients, seedReadme } from "./seedData";
+import {
+    deleteClient,
+    errorMessage,
+    emptyPipeline,
+    fetchClients,
+    fetchReadme,
+    saveClient as saveClientRow,
+    saveReadmeItem,
+    updateClientPipeline,
+    type Client,
+    type ReadmeItem,
+    type Stage,
+    type StageState,
+} from "./data";
 
 type Page = "home" | "call-list" | "pipeline" | "readme";
-type Stage = "research" | "coldCall" | "meetingSet" | "meetingHad" | "saleCall" | "sold";
-type StageState = "not-done" | "pending" | "rejected" | "done";
-
-type Client = {
-    id: string;
-    priority: string;
-    business: string;
-    address: string;
-    phone: string;
-    rating: number | null;
-    reviews: number | null;
-    reason: string;
-    called: string;
-    outcome: string;
-    notes: string;
-    paid: number | null;
-    pipeline: Record<Stage, StageState>;
-};
-
-type ReadmeItem = { title: string; body: string };
 
 const stages: { key: Stage; label: string }[] = [
     { key: "research", label: "Research" },
@@ -42,24 +35,9 @@ const states: { key: StageState; label: string }[] = [
     { key: "done", label: "Done" },
 ];
 
-const emptyPipeline = (): Record<Stage, StageState> => ({
-    research: "not-done",
-    coldCall: "not-done",
-    meetingSet: "not-done",
-    meetingHad: "not-done",
-    saleCall: "not-done",
-    sold: "not-done",
-});
-
-// crypto.randomUUID is only available in secure contexts (HTTPS or localhost),
-// so fall back to a generated id when the app is served over plain HTTP.
-const newId = () =>
-    typeof crypto.randomUUID === "function"
-        ? crypto.randomUUID()
-        : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
-
+// New clients have no id yet; the database generates one when they are saved.
 const emptyClient = (): Client => ({
-    id: newId(),
+    id: "",
     priority: "B",
     business: "",
     address: "",
@@ -73,51 +51,6 @@ const emptyClient = (): Client => ({
     paid: null,
     pipeline: emptyPipeline(),
 });
-
-function loadClients(): Client[] {
-    try {
-        const stored = localStorage.getItem("isleworth-clients-v1");
-        if (stored) {
-            // Saved records may still use the old amountPaid field name.
-            return (JSON.parse(stored) as (Omit<Client, "paid"> & { amountPaid?: number | null })[]).map((client) => ({
-                ...client,
-                paid: client.amountPaid ?? null,
-                pipeline: { ...emptyPipeline(), ...client.pipeline },
-            }));
-        }
-    } catch {
-        // Seed data is a safe fallback if browser storage is unavailable.
-    }
-    return seedClients.map((client) => ({
-        ...client,
-        id: newId(),
-        pipeline: { ...client.pipeline },
-    })) as Client[];
-}
-
-function loadReadme(): ReadmeItem[] {
-    const normalize = (items: ReadmeItem[]) =>
-        items
-            .filter((item) => !["Website checked", "Website status"].includes(item.title))
-            .map((item) => ({
-                ...item,
-                body: item.body
-                    .replace("Website checked?, ", "")
-                    .replace("Website checked? = No site | ", ""),
-            }));
-    try {
-        const stored = localStorage.getItem("isleworth-readme-v1");
-        if (stored) return normalize(JSON.parse(stored));
-    } catch {
-        // Seed data is a safe fallback if browser storage is unavailable.
-    }
-    return normalize(
-        seedReadme
-            .slice(1)
-            .filter((row) => row.length > 1)
-            .map((row) => ({ title: row[0], body: row[1] })) as ReadmeItem[],
-    );
-}
 
 function Icon({
     name,
@@ -295,8 +228,10 @@ export default function App() {
     const [page, setPage] = useState<Page>(
         ["home", "call-list", "pipeline", "readme"].includes(initialHash) ? initialHash : "home",
     );
-    const [clients, setClients] = useState<Client[]>(loadClients);
-    const [readme, setReadme] = useState<ReadmeItem[]>(loadReadme);
+    const [clients, setClients] = useState<Client[]>([]);
+    const [readme, setReadme] = useState<ReadmeItem[]>([]);
+    const [dataReady, setDataReady] = useState(false);
+    const [dataError, setDataError] = useState<string | null>(null);
     const [editingClient, setEditingClient] = useState<Client | null>(null);
     const [editingGuide, setEditingGuide] = useState<{ index: number; item: ReadmeItem } | null>(
         null,
@@ -304,6 +239,7 @@ export default function App() {
     const [mobileNav, setMobileNav] = useState(false);
     const [session, setSession] = useState<Session | null>(null);
     const [loading, setLoading] = useState(true);
+    const userId = session?.user.id;
 
     useEffect(() => {
         const getSession = async () => {
@@ -322,11 +258,23 @@ export default function App() {
         return () => subscription?.unsubscribe();
     }, []);
 
-    useEffect(
-        () => localStorage.setItem("isleworth-clients-v1", JSON.stringify(clients)),
-        [clients],
-    );
-    useEffect(() => localStorage.setItem("isleworth-readme-v1", JSON.stringify(readme)), [readme]);
+    // Every read and write goes through Supabase; the screen only shows what it returned.
+    const refreshData = async () => {
+        try {
+            const [nextClients, nextReadme] = await Promise.all([fetchClients(), fetchReadme()]);
+            setClients(nextClients);
+            setReadme(nextReadme);
+            setDataError(null);
+        } catch (err) {
+            setDataError(errorMessage(err));
+        }
+    };
+
+    useEffect(() => {
+        if (!userId) return;
+        refreshData().finally(() => setDataReady(true));
+    }, [userId]);
+
     useEffect(() => {
         document.title = "Polaris | Outreach CRM";
     }, []);
@@ -342,40 +290,46 @@ export default function App() {
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
+        setClients([]);
+        setReadme([]);
+        setDataReady(false);
         setSession(null);
     };
 
-    const saveClient = (client: Client) => {
-        setClients((current) =>
-            current.some((item) => item.id === client.id)
-                ? current.map((item) => (item.id === client.id ? client : item))
-                : [client, ...current],
-        );
-        setEditingClient(null);
+    // Runs a write, then re-reads the data from Supabase. Returns false if the write failed.
+    const runWrite = async (write: () => Promise<void>) => {
+        try {
+            await write();
+        } catch (err) {
+            setDataError(errorMessage(err));
+            return false;
+        }
+        await refreshData();
+        return true;
     };
 
-    const removeClient = (id: string) => {
-        setClients((current) => current.filter((client) => client.id !== id));
-        setEditingClient(null);
+    const saveClient = async (client: Client) => {
+        if (await runWrite(() => saveClientRow(client))) setEditingClient(null);
+    };
+
+    const removeClient = async (id: string) => {
+        if (await runWrite(() => deleteClient(id))) setEditingClient(null);
     };
 
     const updateStage = (id: string, stage: Stage, state: StageState) => {
-        setClients((current) =>
-            current.map((client) => {
-                if (client.id !== id) return client;
-                const stageIndex = stages.findIndex((item) => item.key === stage);
-                const pipeline = { ...client.pipeline, [stage]: state };
-                if (state !== "done") {
-                    stages.slice(stageIndex + 1).forEach((laterStage) => {
-                        pipeline[laterStage.key] = "not-done";
-                    });
-                }
-                return { ...client, pipeline };
-            }),
-        );
+        const client = clients.find((item) => item.id === id);
+        if (!client) return;
+        const stageIndex = stages.findIndex((item) => item.key === stage);
+        const pipeline = { ...client.pipeline, [stage]: state };
+        if (state !== "done") {
+            stages.slice(stageIndex + 1).forEach((laterStage) => {
+                pipeline[laterStage.key] = "not-done";
+            });
+        }
+        runWrite(() => updateClientPipeline(id, pipeline));
     };
 
-    if (loading) {
+    if (loading || (userId && !dataReady)) {
         return (
             <div className="loading-screen">
                 <div className="spinner" />
@@ -470,7 +424,12 @@ export default function App() {
                 </header>
 
                 <div className="content">
-                    {page === "home" && <Home clients={clients} onNavigate={navigate} />}
+                    {dataError && (
+                        <p className="data-error" role="alert">
+                            {dataError}
+                        </p>
+                    )}
+                    {page === "home" &&<Home clients={clients} onNavigate={navigate} />}
                     {page === "call-list" && (
                         <CallList
                             clients={clients}
@@ -510,13 +469,8 @@ export default function App() {
                 <GuideModal
                     value={editingGuide.item}
                     onClose={() => setEditingGuide(null)}
-                    onSave={(item) => {
-                        setReadme((current) =>
-                            current.map((entry, index) =>
-                                index === editingGuide.index ? item : entry,
-                            ),
-                        );
-                        setEditingGuide(null);
+                    onSave={async (item) => {
+                        if (await runWrite(() => saveReadmeItem(item))) setEditingGuide(null);
                     }}
                 />
             )}
