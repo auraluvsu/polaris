@@ -61,6 +61,8 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .btn-ghost { min-width: 36px; padding: 0 9px; color: var(--brown-600); background: transparent; }
 .btn-ghost:hover { color: var(--jade-900); background: var(--jade-50); }
 .btn-danger { color: var(--danger); background: var(--danger-soft); }
+.row-actions { display: flex; justify-content: flex-end; gap: 4px; }
+.row-delete:hover { color: var(--danger); background: var(--danger-soft); }
 .content { max-width: 1580px; margin: 0; padding: 42px 28px 64px; }
 .page-header { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 28px; }
 .eyebrow { margin-bottom: 8px; color: var(--gold-600); font-size: 11px; font-weight: 780; letter-spacing: .15em; text-transform: uppercase; }

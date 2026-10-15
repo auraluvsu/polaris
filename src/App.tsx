@@ -69,7 +69,8 @@ function Icon({
         | "map"
         | "chevron"
         | "menu"
-        | "pound";
+        | "pound"
+        | "trash";
     size?: number;
 }) {
     const paths: Record<string, ReactNode> = {
@@ -134,6 +135,11 @@ function Icon({
         pound: (
             <>
                 <path d="M8 21h10M6 12h9M8 21c3-3 3-7 2-11-.6-2.7.8-6 4.5-6 2.1 0 3.3 1 4.2 2.4" />
+            </>
+        ),
+        trash: (
+            <>
+                <path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" />
             </>
         ),
     };
@@ -434,6 +440,7 @@ export default function App() {
                         <CallList
                             clients={clients}
                             onEdit={setEditingClient}
+                            onDelete={removeClient}
                             onAdd={() => setEditingClient(emptyClient())}
                         />
                     )}
@@ -628,10 +635,12 @@ function formatMoney(value: number) {
 function CallList({
     clients,
     onEdit,
+    onDelete,
     onAdd,
 }: {
     clients: Client[];
     onEdit: (client: Client) => void;
+    onDelete: (id: string) => void;
     onAdd: () => void;
 }) {
     const [query, setQuery] = useState("");
@@ -760,12 +769,25 @@ function CallList({
                                         </span>
                                     </td>
                                     <td>
-                                        <Button
-                                            variant="ghost"
-                                            aria-label={`Edit ${client.business}`}
-                                        >
-                                            <Icon name="edit" size={16} />
-                                        </Button>
+                                        <div className="row-actions">
+                                            <Button
+                                                variant="ghost"
+                                                aria-label={`Edit ${client.business}`}
+                                            >
+                                                <Icon name="edit" size={16} />
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                className="row-delete"
+                                                aria-label={`Delete ${client.business}`}
+                                                onClick={(event) => {
+                                                    event.stopPropagation();
+                                                    onDelete(client.id);
+                                                }}
+                                            >
+                                                <Icon name="trash" size={16} />
+                                            </Button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
