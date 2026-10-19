@@ -10,6 +10,7 @@ import {
     fetchReadme,
     saveClient as saveClientRow,
     saveReadmeItem,
+    updateClientCommentary,
     updateClientPipeline,
     type Client,
     type ReadmeItem,
@@ -50,6 +51,7 @@ const emptyClient = (): Client => ({
     notes: "",
     paid: null,
     pipeline: emptyPipeline(),
+    runningComments: [],
 });
 
 function Icon({
@@ -335,6 +337,14 @@ export default function App() {
         runWrite(() => updateClientPipeline(id, pipeline));
     };
 
+    // Appends a commentary entry stamped with the current date and time. Returns false if the write failed.
+    const addComment = async (id: string, comment: string) => {
+        const client = clients.find((item) => item.id === id);
+        if (!client) return false;
+        const runningComments = [...client.runningComments, { date: new Date(), comment }];
+        return runWrite(() => updateClientCommentary(id, runningComments));
+    };
+
     if (loading || (userId && !dataReady)) {
         return (
             <div className="loading-screen">
@@ -448,6 +458,7 @@ export default function App() {
                         <Pipeline
                             clients={clients}
                             onUpdate={updateStage}
+                            onAddComment={addComment}
                             onEdit={setEditingClient}
                         />
                     )}
@@ -821,13 +832,69 @@ function CellStatus({ value }: { value: string }) {
     );
 }
 
+const commentStamp = (date: Date) =>
+    date.toLocaleString("en-GB", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+    });
+
+function CommentaryCell({
+    client,
+    onAddComment,
+}: {
+    client: Client;
+    onAddComment: (id: string, comment: string) => Promise<boolean>;
+}) {
+    const [draft, setDraft] = useState("");
+    const [saving, setSaving] = useState(false);
+    const submit = async (event: FormEvent) => {
+        event.preventDefault();
+        const comment = draft.trim();
+        if (!comment) return;
+        setSaving(true);
+        if (await onAddComment(client.id, comment)) setDraft("");
+        setSaving(false);
+    };
+    return (
+        <td className="commentary-cell">
+            <form className="commentary-form" onSubmit={submit}>
+                <textarea
+                    rows={2}
+                    value={draft}
+                    onChange={(event) => setDraft(event.target.value)}
+                    placeholder="Add a comment…"
+                    aria-label={`${client.business}: add comment`}
+                />
+                <Button type="submit" variant="secondary" disabled={!draft.trim() || saving}>
+                    Add
+                </Button>
+            </form>
+            {client.runningComments.length > 0 && (
+                <ol className="commentary-list">
+                    {[...client.runningComments].reverse().map((item, index) => (
+                        <li key={`${item.date.getTime()}-${index}`}>
+                            <time dateTime={item.date.toISOString()}>{commentStamp(item.date)}</time>
+                            <p>{item.comment}</p>
+                        </li>
+                    ))}
+                </ol>
+            )}
+        </td>
+    );
+}
+
 function Pipeline({
     clients,
     onUpdate,
+    onAddComment,
     onEdit,
 }: {
     clients: Client[];
     onUpdate: (id: string, stage: Stage, state: StageState) => void;
+    onAddComment: (id: string, comment: string) => Promise<boolean>;
     onEdit: (client: Client) => void;
 }) {
     const [query, setQuery] = useState("");
@@ -891,6 +958,7 @@ function Pipeline({
                                         {stage.label}
                                     </th>
                                 ))}
+                                <th>Commentary</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -937,6 +1005,7 @@ function Pipeline({
                                             </td>
                                         );
                                     })}
+                                    <CommentaryCell client={client} onAddComment={onAddComment} />
                                 </tr>
                             ))}
                         </tbody>

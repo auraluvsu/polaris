@@ -22,6 +22,7 @@ create table if not exists public.clients (
   outcome text null,
   paid double precision null,
   notes text null,
+  running_comments jsonb not null default '[]'::jsonb,
   research public.stage_status not null default 'not-done'::stage_status,
   cold_call public.stage_status not null default 'not-done'::stage_status,
   meeting_set public.stage_status not null default 'not-done'::stage_status,
@@ -37,6 +38,10 @@ create table if not exists public.readme_items (
     title text not null,
     body text not null default ''
 );
+
+-- Adds the commentary column to clients that were created before it existed.
+alter table public.clients
+    add column if not exists running_comments jsonb not null default '[]'::jsonb;
 
 alter table public.clients enable row level security;
 alter table public.readme_items enable row level security;

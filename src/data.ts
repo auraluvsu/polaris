@@ -3,6 +3,8 @@ import { supabase } from "./supabaseClient";
 export type Stage = "research" | "coldCall" | "meetingSet" | "meetingHad" | "saleCall" | "sold";
 export type StageState = "not-done" | "pending" | "rejected" | "done";
 
+export type RunningComment = { date: Date; comment: string };
+
 export type Client = {
     id: string;
     priority: string;
@@ -17,6 +19,7 @@ export type Client = {
     notes: string;
     paid: number | null;
     pipeline: Record<Stage, StageState>;
+    runningComments: RunningComment[];
 };
 
 export type ReadmeItem = { id: number; title: string; body: string };
@@ -44,6 +47,7 @@ type ClientRow = {
     outcome: string | null;
     notes: string | null;
     paid: number | null;
+    running_comments: { date: string; comment: string }[] | null;
 } & Record<string, unknown>;
 
 export const emptyPipeline = (): Record<Stage, StageState> => ({
@@ -81,6 +85,10 @@ function fromRow(row: ClientRow): Client {
         notes: row.notes ?? "",
         paid: row.paid,
         pipeline,
+        runningComments: (row.running_comments ?? []).map((item) => ({
+            date: new Date(item.date),
+            comment: item.comment,
+        })),
     };
 }
 
@@ -92,6 +100,11 @@ function stageRow(pipeline: Record<Stage, StageState>) {
             pipeline[stage],
         ]),
     );
+}
+
+// Dates are stored as ISO strings inside the running_comments jsonb column.
+function commentRows(comments: RunningComment[]) {
+    return comments.map((item) => ({ date: item.date.toISOString(), comment: item.comment }));
 }
 
 // Converts the app's Client into the columns of public.clients (without id and created_at).
@@ -108,6 +121,7 @@ function toRow(client: Client) {
         outcome: client.outcome,
         notes: client.notes,
         paid: client.paid,
+        running_comments: commentRows(client.runningComments),
         ...stageRow(client.pipeline),
     };
 }
@@ -145,6 +159,18 @@ export async function updateClientPipeline(
 ): Promise<void> {
     // Only the six stage columns are written, so the rest of the client row is left alone.
     const { error } = await supabase.from("clients").update(stageRow(pipeline)).eq("id", id);
+    if (error) throw error;
+}
+
+export async function updateClientCommentary(
+    id: string,
+    runningComments: RunningComment[],
+): Promise<void> {
+    // Only the commentary column is written, so the rest of the client row is left alone.
+    const { error } = await supabase
+        .from("clients")
+        .update({ running_comments: commentRows(runningComments) })
+        .eq("id", id);
     if (error) throw error;
 }
 
