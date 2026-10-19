@@ -121,7 +121,7 @@ td a:hover { text-decoration: underline; }
 .legend-pending i { background: var(--gold-400); }
 .legend-rejected i { background: #c96060; }
 .legend-done i { background: var(--jade-700); }
-.pipeline-table table { min-width: 1340px; }
+.pipeline-table table { min-width: 1150px; }
 .pipeline-table th:not(:first-child) { text-align: center; }
 .pipeline-table td { height: 72px; text-align: center; cursor: default; }
 .pipeline-table .sticky-col { position: sticky; left: 0; z-index: 3; min-width: 210px; background: var(--white); text-align: left; box-shadow: 7px 0 14px rgba(59,45,33,.035); }
@@ -135,15 +135,18 @@ td a:hover { text-decoration: underline; }
 .state-rejected { color: #fff; background: #b74747; border-color: #963333; }
 .state-done { color: #fff; background: var(--jade-700); border-color: var(--jade-950); }
 .stage-select:disabled.stage-locked { color: #99918a; background: #eeeae5; border-color: #ded8d0; cursor: not-allowed; opacity: .58; }
-.commentary-cell { min-width: 260px; height: auto; padding: 10px 14px; text-align: left; cursor: default; }
-.commentary-form { display: grid; gap: 6px; }
-.commentary-form textarea { width: 100%; padding: 7px 9px; font-size: 12px; resize: vertical; color: var(--brown-900); background: var(--white); border: 1px solid var(--border); border-radius: 8px; outline: 0; }
+.commentary-open { min-height: 30px; height: 30px; padding: 0 12px; font-size: 11px; }
+.commentary-form { display: grid; gap: 8px; }
+.commentary-form textarea { width: 100%; padding: 10px 11px; font-size: 13px; resize: vertical; color: var(--brown-900); background: var(--white); border: 1px solid var(--border); border-radius: 8px; outline: 0; }
 .commentary-form textarea:focus { border-color: #8db3a3; box-shadow: 0 0 0 3px var(--jade-50); }
-.commentary-form .btn { justify-self: end; height: 28px; padding: 0 12px; font-size: 11px; }
-.commentary-list { display: grid; gap: 8px; margin: 10px 0 0; padding: 0; max-height: 160px; overflow-y: auto; list-style: none; }
-.commentary-list li { padding-left: 9px; border-left: 2px solid var(--gold-400); }
-.commentary-list time { display: block; color: #91887f; font-size: 10px; }
-.commentary-list p { margin: 2px 0 0; color: var(--brown-900); font-size: 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.commentary-form .btn { justify-self: end; }
+.commentary-list { display: grid; gap: 10px; margin: 18px 0 0; padding: 0; list-style: none; }
+.commentary-list li { padding: 10px 12px 10px 14px; border-left: 2px solid var(--gold-400); background: #faf9f6; border-radius: 0 8px 8px 0; }
+.commentary-entry-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.commentary-list time { color: #91887f; font-size: 11px; }
+.commentary-list p { margin: 4px 0 0; color: var(--brown-900); font-size: 13px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.commentary-delete { min-height: 26px; height: 26px; padding: 0 8px; color: #b04a4a; font-size: 11px; }
+.commentary-empty { margin: 18px 0 0; color: var(--muted); font-size: 13px; }
 .money-value { color: var(--jade-900); font-weight: 750; white-space: nowrap; }
 .home-hero { position: relative; overflow: hidden; display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(280px, .7fr); gap: 40px; align-items: center; min-height: 310px; padding: 48px; color: white; background: var(--jade-950); border-radius: 16px; box-shadow: var(--shadow); }
 .home-hero::after { content: ""; position: absolute; right: -90px; bottom: -150px; width: 360px; height: 360px; border: 1px solid rgba(213,170,79,.24); border-radius: 50%; box-shadow: 0 0 0 45px rgba(213,170,79,.04), 0 0 0 90px rgba(213,170,79,.025); pointer-events: none; }

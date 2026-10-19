@@ -345,6 +345,14 @@ export default function App() {
         return runWrite(() => updateClientCommentary(id, runningComments));
     };
 
+    // Removes one commentary entry by its position in the stored list. Returns false if the write failed.
+    const deleteComment = async (id: string, index: number) => {
+        const client = clients.find((item) => item.id === id);
+        if (!client) return false;
+        const runningComments = client.runningComments.filter((_, position) => position !== index);
+        return runWrite(() => updateClientCommentary(id, runningComments));
+    };
+
     if (loading || (userId && !dataReady)) {
         return (
             <div className="loading-screen">
@@ -459,6 +467,7 @@ export default function App() {
                             clients={clients}
                             onUpdate={updateStage}
                             onAddComment={addComment}
+                            onDeleteComment={deleteComment}
                             onEdit={setEditingClient}
                         />
                     )}
@@ -841,12 +850,16 @@ const commentStamp = (date: Date) =>
         minute: "2-digit",
     });
 
-function CommentaryCell({
+function CommentaryModal({
     client,
     onAddComment,
+    onDeleteComment,
+    onClose,
 }: {
     client: Client;
     onAddComment: (id: string, comment: string) => Promise<boolean>;
+    onDeleteComment: (id: string, index: number) => Promise<boolean>;
+    onClose: () => void;
 }) {
     const [draft, setDraft] = useState("");
     const [saving, setSaving] = useState(false);
@@ -859,29 +872,77 @@ function CommentaryCell({
         setSaving(false);
     };
     return (
-        <td className="commentary-cell">
-            <form className="commentary-form" onSubmit={submit}>
-                <textarea
-                    rows={2}
-                    value={draft}
-                    onChange={(event) => setDraft(event.target.value)}
-                    placeholder="Add a comment…"
-                    aria-label={`${client.business}: add comment`}
-                />
-                <Button type="submit" variant="secondary" disabled={!draft.trim() || saving}>
-                    Add
-                </Button>
-            </form>
-            {client.runningComments.length > 0 && (
-                <ol className="commentary-list">
-                    {[...client.runningComments].reverse().map((item, index) => (
-                        <li key={`${item.date.getTime()}-${index}`}>
-                            <time dateTime={item.date.toISOString()}>{commentStamp(item.date)}</time>
-                            <p>{item.comment}</p>
-                        </li>
-                    ))}
-                </ol>
-            )}
+        <div
+            className="modal-backdrop"
+            role="presentation"
+            onMouseDown={(event) => event.target === event.currentTarget && onClose()}
+        >
+            <div
+                className="modal"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="commentary-modal-title"
+            >
+                <div className="modal-head">
+                    <div>
+                        <span>Running commentary</span>
+                        <h2 id="commentary-modal-title">{client.business}</h2>
+                    </div>
+                    <Button variant="ghost" aria-label="Close" onClick={onClose}>
+                        <Icon name="close" />
+                    </Button>
+                </div>
+                <form className="commentary-form" onSubmit={submit}>
+                    <textarea
+                        rows={3}
+                        value={draft}
+                        onChange={(event) => setDraft(event.target.value)}
+                        placeholder="Add a comment…"
+                        aria-label={`${client.business}: add comment`}
+                    />
+                    <Button type="submit" disabled={!draft.trim() || saving}>
+                        Add comment
+                    </Button>
+                </form>
+                {client.runningComments.length > 0 ? (
+                    <ol className="commentary-list">
+                        {client.runningComments
+                            .map((item, index) => ({ item, index }))
+                            .reverse()
+                            .map(({ item, index }) => (
+                                <li key={`${item.date.getTime()}-${index}`}>
+                                    <div className="commentary-entry-head">
+                                        <time dateTime={item.date.toISOString()}>
+                                            {commentStamp(item.date)}
+                                        </time>
+                                        <Button
+                                            variant="ghost"
+                                            className="commentary-delete"
+                                            aria-label={`Delete comment from ${commentStamp(item.date)}`}
+                                            onClick={() => onDeleteComment(client.id, index)}
+                                        >
+                                            Delete
+                                        </Button>
+                                    </div>
+                                    <p>{item.comment}</p>
+                                </li>
+                            ))}
+                    </ol>
+                ) : (
+                    <p className="commentary-empty">No comments yet.</p>
+                )}
+            </div>
+        </div>
+    );
+}
+
+function CommentaryCell({ client, onOpen }: { client: Client; onOpen: () => void }) {
+    const count = client.runningComments.length;
+    return (
+        <td>
+            <Button variant="secondary" className="commentary-open" onClick={onOpen}>
+                {count ? `Comments (${count})` : "Add comment"}
+            </Button>
         </td>
     );
 }
@@ -890,14 +951,18 @@ function Pipeline({
     clients,
     onUpdate,
     onAddComment,
+    onDeleteComment,
     onEdit,
 }: {
     clients: Client[];
     onUpdate: (id: string, stage: Stage, state: StageState) => void;
     onAddComment: (id: string, comment: string) => Promise<boolean>;
+    onDeleteComment: (id: string, index: number) => Promise<boolean>;
     onEdit: (client: Client) => void;
 }) {
     const [query, setQuery] = useState("");
+    const [commentaryId, setCommentaryId] = useState<string | null>(null);
+    const commentaryClient = clients.find((client) => client.id === commentaryId);
     const filtered = clients.filter((client) =>
         client.business.toLowerCase().includes(query.toLowerCase()),
     );
@@ -1005,13 +1070,24 @@ function Pipeline({
                                             </td>
                                         );
                                     })}
-                                    <CommentaryCell client={client} onAddComment={onAddComment} />
+                                    <CommentaryCell
+                                        client={client}
+                                        onOpen={() => setCommentaryId(client.id)}
+                                    />
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
             </section>
+            {commentaryClient && (
+                <CommentaryModal
+                    client={commentaryClient}
+                    onAddComment={onAddComment}
+                    onDeleteComment={onDeleteComment}
+                    onClose={() => setCommentaryId(null)}
+                />
+            )}
         </>
     );
 }
