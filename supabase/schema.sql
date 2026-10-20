@@ -1,5 +1,3 @@
--- Run this in the Supabase SQL editor before exporting the seed data.
-
 do $$
 begin
     create type public.stage_status as enum ('not-done', 'pending', 'rejected', 'done');
