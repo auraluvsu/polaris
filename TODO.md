@@ -30,26 +30,26 @@
 
 ## Dead code
 
-- [ ] Remove the Figma Make scaffolding from `vite.config.ts` (`figmaSiteConfiguration`, `figmaErrorOverlayReplay`, `figmaReactRefreshBoundaryFallback`, `figmaMakeKitPlugin`, the `FIGMA_PUBLIC_URL` base, and the `.figma` watch ignore). They are inert or broken now
-- [ ] `dist/index.html`, `dist/favicon.svg` and `dist/robots.txt` are tracked even though `dist/` is in `.gitignore`. `dist/index.html` is a stale build titled "Figma Make App". Untrack `dist/` and delete the copies
+- [x] Remove the Figma Make scaffolding from `vite.config.ts` (`figmaSiteConfiguration`, `figmaErrorOverlayReplay`, `figmaReactRefreshBoundaryFallback`, `figmaMakeKitPlugin`, the `FIGMA_PUBLIC_URL` base, and the `.figma` watch ignore). They are inert or broken now
+- [x] `dist/index.html`, `dist/favicon.svg` and `dist/robots.txt` are tracked even though `dist/` is in `.gitignore`. `dist/index.html` is a stale build titled "Figma Make App". Untrack `dist/` and delete the copies
 - [ ] Two lockfiles are tracked, `package-lock.json` and `pnpm-lock.yaml`, and `.mise.toml` pins pnpm. Keep `pnpm-lock.yaml` and delete `package-lock.json`
 - [ ] Two formatter configs, `.prettierrc` and `.prettierignore`, sit alongside oxfmt (the `format` script). Keep one
 - [ ] `.gitattributes` is the generic Git LFS template. Nothing in the repo is tracked with LFS, so remove it unless LFS is wanted
 
 ## Inconsistencies
 
-- [ ] `package.json` name and `CLAUDE.md` still say "figma-make-app", and `CLAUDE.md` says the app runs inside Figma Make. Rename and update
-- [ ] `README.md` still documents `OAUTH_SETUP.md` (deleted in `cc6c4c7`), the `exportSeedData` console step, and `src/exportSeed.ts` and `src/seedData.ts` (deleted in `d3f147f`). Remove those steps and layout entries
-- [ ] `supabase/schema.sql` header still says "before exporting the seed data". The clients primary key is named `calls_pkey`, a leftover from an earlier table name. `running_comments` is defined twice (in `create table` and in a later `alter`)
-- [ ] Formatting differs between files. `App.tsx`, `Login.tsx` and `main.tsx` use 4 spaces and double quotes. `supabaseClient.ts` uses single quotes with no semicolons. `index.css` and `vite.config.ts` use 2 spaces and single quotes. `App.tsx:456` is missing a space (`&&<Home`). Run `pnpm format` once the config is settled
+- [x] `package.json` name and `CLAUDE.md` still say "figma-make-app", and `CLAUDE.md` says the app runs inside Figma Make. Rename and update
+- [x] `README.md` still documents `OAUTH_SETUP.md` (deleted in `cc6c4c7`), the `exportSeedData` console step, and `src/exportSeed.ts` and `src/seedData.ts` (deleted in `d3f147f`). Remove those steps and layout entries
+- [x] `supabase/schema.sql` header still says "before exporting the seed data". The clients primary key is named `calls_pkey`, a leftover from an earlier table name. `running_comments` is defined twice (in `create table` and in a later `alter`)
+- [x] Formatting differs between files. `App.tsx`, `Login.tsx` and `main.tsx` use 4 spaces and double quotes. `supabaseClient.ts` uses single quotes with no semicolons. `index.css` and `vite.config.ts` use 2 spaces and single quotes. `App.tsx:456` is missing a space (`&&<Home`). Run `pnpm format` once the config is settled
 - [ ] `CLAUDE.md` says components are default exports, but App.tsx's sub-components are not exported and `data.ts` uses named exports. Decide which rule applies and update `CLAUDE.md`
-- [ ] "Isleworth" is hard-coded in the topbar, the Read me copy and the Call list copy. Move it to one constant if the app is reused for another area
+- [x] "Isleworth" is hard-coded in the topbar, the Read me copy and the Call list copy. Move it to one constant if the app is reused for another area
 
 ## Types
 
-- [ ] The database columns `called`, `outcome` and `priority` are free text, and the app's string types match. `fromRow` casts stage values with `as StageState` without checking them. Use a check constraint in the schema and a shared union type
+- [x] The database columns `called`, `outcome` and `priority` are free text, and the app's string types match. `fromRow` casts stage values with `as StageState` without checking them. Use a check constraint in the schema and a shared union type
 
 ## Hosting and tooling
 
-- [ ] No deployment config, CI or hosting notes are tracked (no `vercel.json`, no workflow files). Document where the app is hosted, the env vars to set there, and the Supabase OAuth redirect URLs that must allow that origin (`Login.tsx` sends `window.location.origin`)
-- [ ] `package.json` has no typecheck or test script, and the build is currently broken (see the `vite.config.ts` item). Add a typecheck script (`tsc --noEmit`) and a build check
+- [x] No deployment config, CI or hosting notes are tracked (no `vercel.json`, no workflow files). Document where the app is hosted, the env vars to set there, and the Supabase OAuth redirect URLs that must allow that origin (`Login.tsx` sends `window.location.origin`)
+- [x] `package.json` has no typecheck or test script, and the build is currently broken (see the `vite.config.ts` item). Add a typecheck script (`tsc --noEmit`) and a build check
