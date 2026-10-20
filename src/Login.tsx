@@ -9,12 +9,13 @@ export default function Login() {
         try {
             setLoading(true);
             setError(null);
-            await supabase.auth.signInWithOAuth({
+            const error = await supabase.auth.signInWithOAuth({
                 provider: "google",
                 options: {
                     redirectTo: window.location.origin,
                 },
             });
+            if (error) throw new Error("Failed to sign in with OAuth");
         } catch (err) {
             setError(err instanceof Error ? err.message : "Failed to sign in");
             setLoading(false);

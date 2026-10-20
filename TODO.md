@@ -2,20 +2,20 @@
 
 ## Security
 
-- [ ] RLS policies in `supabase/schema.sql` let any authenticated user read and write every client and readme item. Restrict to an allowlisted owner, and check that Google sign-ups are restricted in Supabase
-- [ ] `.env.local` (Supabase URL and anon key) is tracked in git (added in `20b6ea3`, kept in `f4bdd4d`). Run `git rm --cached`, add it to `.gitignore`, and rotate the key if the repo has been shared
-- [ ] Deleting a client (CallList trash button, ClientModal "Delete client") and deleting a comment have no confirmation step
+- [x] RLS policies in `supabase/schema.sql` let any authenticated user read and write every client and readme item. Restrict to an allowlisted owner, and check that Google sign-ups are restricted in Supabase
+- [x] `.env.local` (Supabase URL and anon key) is tracked in git (added in `20b6ea3`, kept in `f4bdd4d`). Run `git rm --cached`, add it to `.gitignore`, and rotate the key if the repo has been shared
+- [x] Deleting a client (CallList trash button, ClientModal "Delete client") and deleting a comment have no confirmation step
 
 ## Bugs
 
-- [ ] `Login.tsx`: `signInWithOAuth` returns `{ error }` and does not throw, so the `catch` never runs. Sign-in errors are never shown, and the spinner stays on if the call fails
-- [ ] `vite.config.ts:6` imports `./.figma/make/site.json`, which was deleted in `de32de8`. `pnpm build` and `tsc --noEmit` both fail on it
-- [ ] `ClientModal` saves the whole row from a snapshot taken when it opened, including pipeline and `running_comments`. Saving can revert stage changes or comments made in another tab or since the modal opened. Save only the editable columns
-- [ ] Lost updates: `updateStage`, `addComment` and `deleteComment` compute the new value from local state and write it back (all six stage columns, or the whole `running_comments` array). Two quick changes before `refreshData` finishes can drop one. Comments are also deleted by array index, so a stale list deletes the wrong entry. Give comments ids and update per field in the database
-- [ ] `fetchClients` has no range or limit. PostgREST returns at most 1000 rows by default, and the list would be cut off silently past that
-- [ ] `supabaseClient.ts` throws at import when the env vars are missing, so the app shows a blank page instead of a message
-- [ ] Stage order is enforced only in the UI (Pipeline locked select, `updateStage` reset). The database accepts any combination of stage states, so enforce it in the database or add a check
-- [ ] `index.html` has `<!-- figma:* -->` placeholders and `lang="<!-- figma:lang -->"`, which only the removed Figma plugin filled in. Without the plugin, `<html lang>` is invalid and the `<title>` is empty until React sets it
+- [x] `Login.tsx`: `signInWithOAuth` returns `{ error }` and does not throw, so the `catch` never runs. Sign-in errors are never shown, and the spinner stays on if the call fails
+- [x] `vite.config.ts:6` imports `./.figma/make/site.json`, which was deleted in `de32de8`. `pnpm build` and `tsc --noEmit` both fail on it
+- [x]`ClientModal` saves the whole row from a snapshot taken when it opened, including pipeline and `running_comments`. Saving can revert stage changes or comments made in another tab or since the modal opened. Save only the editable columns
+- [x] Lost updates: `updateStage`, `addComment` and `deleteComment` compute the new value from local state and write it back (all six stage columns, or the whole `running_comments` array). Two quick changes before `refreshData` finishes can drop one. Comments are also deleted by array index, so a stale list deletes the wrong entry. Give comments ids and update per field in the database
+- [x] `fetchClients` has no range or limit. PostgREST returns at most 1000 rows by default, and the list would be cut off silently past that
+- [x] `supabaseClient.ts` throws at import when the env vars are missing, so the app shows a blank page instead of a message
+- [x] Stage order is enforced only in the UI (Pipeline locked select, `updateStage` reset). The database accepts any combination of stage states, so enforce it in the database or add a check
+- [x] `index.html` has `<!-- figma:* -->` placeholders and `lang="<!-- figma:lang -->"`, which only the removed Figma plugin filled in. Without the plugin, `<html lang>` is invalid and the `<title>` is empty until React sets it
 
 ## Data consistency across screens
 
