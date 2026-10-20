@@ -28,15 +28,6 @@ An outreach CRM for tracking local prospects from first research through to a co
    ```
    It runs on port 8443 by default, or on `$PORT` if set.
 
-## Loading the starter list
-
-The seed data (57 Isleworth prospects and the guide text) is loaded once, into empty tables:
-
-1. Sign in to the app.
-2. Open the browser console and run `await exportSeedData()`.
-
-It refuses to run if either table already has rows, so it cannot duplicate data.
-
 ## Scripts
 
 | Command        | What it does                          |
