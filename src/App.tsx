@@ -1,13 +1,7 @@
-import {
-    useEffect,
-    useMemo,
-    useState,
-    type FormEvent,
-    type ReactNode,
-} from "react"
-import type { Session } from "@supabase/supabase-js"
-import { supabase } from "./supabaseClient"
-import Login from "./Login"
+import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
+import type { Session } from "@supabase/supabase-js";
+import { supabase } from "./supabaseClient";
+import Login from "./Login";
 import {
     deleteClient,
     errorMessage,
@@ -22,25 +16,25 @@ import {
     type ReadmeItem,
     type Stage,
     type StageState,
-} from "./data"
+} from "./data";
 
-type Page = "home" | "call-list" | "pipeline" | "readme"
+type Page = "home" | "call-list" | "pipeline" | "readme";
 
-const stages: { key: Stage label: string }[] = [
+const stages: { key: Stage; label: string }[] = [
     { key: "research", label: "Research" },
     { key: "coldCall", label: "Cold call" },
     { key: "meetingSet", label: "Meeting set" },
     { key: "meetingHad", label: "Meeting had" },
     { key: "saleCall", label: "Sale call" },
     { key: "sold", label: "Sold" },
-]
+];
 
-const states: { key: StageState label: string }[] = [
+const states: { key: StageState; label: string }[] = [
     { key: "not-done", label: "Not done" },
     { key: "pending", label: "Pending" },
     { key: "rejected", label: "Rejected" },
     { key: "done", label: "Done" },
-]
+];
 
 // New clients have no id yet; the database generates one when they are saved.
 const emptyClient = (): Client => ({
@@ -58,14 +52,28 @@ const emptyClient = (): Client => ({
     paid: null,
     pipeline: emptyPipeline(),
     runningComments: [],
-})
+});
 
 function Icon({
     name,
     size = 18,
 }: {
-    name: "home" | "phone" | "pipeline" | "book" | "plus" | "search" | "edit" | "close" | "star" | "map" | "chevron" | "menu" | "pound" | "trash"
-    size?: number
+    name:
+        | "home"
+        | "phone"
+        | "pipeline"
+        | "book"
+        | "plus"
+        | "search"
+        | "edit"
+        | "close"
+        | "star"
+        | "map"
+        | "chevron"
+        | "menu"
+        | "pound"
+        | "trash";
+    size?: number;
 }) {
     const paths: Record<string, ReactNode> = {
         home: (
@@ -113,9 +121,7 @@ function Icon({
                 <path d="m6 6 12 12M18 6 6 18" />
             </>
         ),
-        star: (
-            <path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8-6.2-3.2L5.8 21 7 14.2l-5-4.9 6.9-1Z" />
-        ),
+        star: <path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8-6.2-3.2L5.8 21 7 14.2l-5-4.9 6.9-1Z" />,
         map: (
             <>
                 <path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3Z" />
@@ -138,7 +144,7 @@ function Icon({
                 <path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" />
             </>
         ),
-    }
+    };
     return (
         <svg
             aria-hidden="true"
@@ -153,7 +159,7 @@ function Icon({
         >
             {paths[name]}
         </svg>
-    )
+    );
 }
 
 function PolarisLogo({ size = 40 }: { size?: number }) {
@@ -174,7 +180,7 @@ function PolarisLogo({ size = 40 }: { size?: number }) {
             />
             <path d="m20 15.4 4.6 4.6-4.6 4.6-4.6-4.6 4.6-4.6Z" fill="#3B2D21" />
         </svg>
-    )
+    );
 }
 
 function Button({
@@ -183,13 +189,13 @@ function Button({
     className = "",
     ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
-    variant?: "primary" | "secondary" | "ghost" | "danger"
+    variant?: "primary" | "secondary" | "ghost" | "danger";
 }) {
     return (
         <button className={`btn btn-${variant} ${className}`} {...props}>
             {children}
         </button>
-    )
+    );
 }
 
 function PageHeader({
@@ -198,10 +204,10 @@ function PageHeader({
     description,
     action,
 }: {
-    eyebrow: string
-    title: string
-    description: string
-    action?: ReactNode
+    eyebrow: string;
+    title: string;
+    description: string;
+    action?: ReactNode;
 }) {
     return (
         <div className="page-header">
@@ -212,170 +218,152 @@ function PageHeader({
             </div>
             {action}
         </div>
-    )
+    );
 }
 
-function StatCard({
-    label,
-    value,
-    meta,
-}: {
-    label: string
-    value: string | number
-    meta: string
-}) {
+function StatCard({ label, value, meta }: { label: string; value: string | number; meta: string }) {
     return (
         <div className="stat-card">
             <span>{label}</span>
             <strong>{value}</strong>
             <small>{meta}</small>
         </div>
-    )
+    );
 }
 
 export default function App() {
-    const initialHash = window.location.hash.replace("#/", "") as Page
+    const initialHash = window.location.hash.replace("#/", "") as Page;
     const [page, setPage] = useState<Page>(
-        ["home", "call-list", "pipeline", "readme"].includes(initialHash)
-            ? initialHash
-            : "home",
-    )
-    const [clients, setClients] = useState<Client[]>([])
-    const [readme, setReadme] = useState<ReadmeItem[]>([])
-    const [dataReady, setDataReady] = useState(false)
-    const [dataError, setDataError] = useState<string | null>(null)
-    const [editingClient, setEditingClient] = useState<Client | null>(null)
+        ["home", "call-list", "pipeline", "readme"].includes(initialHash) ? initialHash : "home",
+    );
+    const [clients, setClients] = useState<Client[]>([]);
+    const [readme, setReadme] = useState<ReadmeItem[]>([]);
+    const [dataReady, setDataReady] = useState(false);
+    const [dataError, setDataError] = useState<string | null>(null);
+    const [editingClient, setEditingClient] = useState<Client | null>(null);
     const [editingGuide, setEditingGuide] = useState<{
-        index: number
-        item: ReadmeItem
-    } | null>(null)
-    const [mobileNav, setMobileNav] = useState(false)
-    const [session, setSession] = useState<Session | null>(null)
-    const [loading, setLoading] = useState(true)
-    const userId = session?.user.id
+        index: number;
+        item: ReadmeItem;
+    } | null>(null);
+    const [mobileNav, setMobileNav] = useState(false);
+    const [session, setSession] = useState<Session | null>(null);
+    const [loading, setLoading] = useState(true);
+    const userId = session?.user.id;
 
     useEffect(() => {
         const getSession = async () => {
             const {
                 data: { session },
-            } = await supabase.auth.getSession()
-            setSession(session)
-            setLoading(false)
-        }
-        getSession()
+            } = await supabase.auth.getSession();
+            setSession(session);
+            setLoading(false);
+        };
+        getSession();
         const {
             data: { subscription },
         } = supabase.auth.onAuthStateChange((_event, session) => {
-            setSession(session)
-        })
-        return () => subscription?.unsubscribe()
-    }, [])
+            setSession(session);
+        });
+        return () => subscription?.unsubscribe();
+    }, []);
 
     // Every read and write goes through Supabase; the screen only shows what it returned.
     const refreshData = async () => {
         try {
-            const [nextClients, nextReadme] = await Promise.all([
-                fetchClients(),
-                fetchReadme(),
-            ])
-            setClients(nextClients)
-            setReadme(nextReadme)
-            setDataError(null)
+            const [nextClients, nextReadme] = await Promise.all([fetchClients(), fetchReadme()]);
+            setClients(nextClients);
+            setReadme(nextReadme);
+            setDataError(null);
         } catch (err) {
-            setDataError(errorMessage(err))
+            setDataError(errorMessage(err));
         }
-    }
+    };
 
     useEffect(() => {
-        if (!userId) return
-        refreshData().finally(() => setDataReady(true))
-    }, [userId])
+        if (!userId) return;
+        refreshData().finally(() => setDataReady(true));
+    }, [userId]);
 
     useEffect(() => {
-        document.title = "Polaris | Outreach CRM"
-    }, [])
+        document.title = "Polaris | Outreach CRM";
+    }, []);
     useEffect(() => {
-        window.location.hash = `/${page}`
-        window.scrollTo(0, 0)
-    }, [page])
+        window.location.hash = `/${page}`;
+        window.scrollTo(0, 0);
+    }, [page]);
 
     const navigate = (next: Page) => {
-        setPage(next)
-        setMobileNav(false)
-    }
+        setPage(next);
+        setMobileNav(false);
+    };
 
     const handleLogout = async () => {
-        await supabase.auth.signOut()
-        setClients([])
-        setReadme([])
-        setDataReady(false)
-        setSession(null)
-    }
+        await supabase.auth.signOut();
+        setClients([]);
+        setReadme([]);
+        setDataReady(false);
+        setSession(null);
+    };
 
     // Runs a write, then re-reads the data from Supabase. Returns false if the write failed.
     const runWrite = async (write: () => Promise<void>) => {
         try {
-            await write()
+            await write();
         } catch (err) {
-            setDataError(errorMessage(err))
-            return false
+            setDataError(errorMessage(err));
+            return false;
         }
-        await refreshData()
-        return true
-    }
+        await refreshData();
+        return true;
+    };
 
     const saveClient = async (client: Client) => {
-        if (await runWrite(() => saveClientRow(client))) setEditingClient(null)
-    }
+        if (await runWrite(() => saveClientRow(client))) setEditingClient(null);
+    };
 
     const removeClient = async (id: string) => {
-        if (await runWrite(() => deleteClient(id))) setEditingClient(null)
-    }
+        if (await runWrite(() => deleteClient(id))) setEditingClient(null);
+    };
 
     const updateStage = (id: string, stage: Stage, state: StageState) => {
-        const client = clients.find((item) => item.id === id)
-        if (!client) return
-        const stageIndex = stages.findIndex((item) => item.key === stage)
-        const pipeline = { ...client.pipeline, [stage]: state }
+        const client = clients.find((item) => item.id === id);
+        if (!client) return;
+        const stageIndex = stages.findIndex((item) => item.key === stage);
+        const pipeline = { ...client.pipeline, [stage]: state };
         if (state !== "done") {
             stages.slice(stageIndex + 1).forEach((laterStage) => {
-                pipeline[laterStage.key] = "not-done"
-            })
+                pipeline[laterStage.key] = "not-done";
+            });
         }
-        runWrite(() => updateClientPipeline(id, pipeline))
-    }
+        runWrite(() => updateClientPipeline(id, pipeline));
+    };
 
     // Appends a commentary entry stamped with the current date and time. Returns false if the write failed.
     const addComment = async (id: string, comment: string) => {
-        const client = clients.find((item) => item.id === id)
-        if (!client) return false
-        const runningComments = [
-            ...client.runningComments,
-            { date: new Date(), comment },
-        ]
-        return runWrite(() => updateClientCommentary(id, runningComments))
-    }
+        const client = clients.find((item) => item.id === id);
+        if (!client) return false;
+        const runningComments = [...client.runningComments, { date: new Date(), comment }];
+        return runWrite(() => updateClientCommentary(id, runningComments));
+    };
 
     // Removes one commentary entry by its position in the stored list. Returns false if the write failed.
     const deleteComment = async (id: string, index: number) => {
-        const client = clients.find((item) => item.id === id)
-        if (!client) return false
-        const runningComments = client.runningComments.filter(
-            (_, position) => position !== index,
-        )
-        return runWrite(() => updateClientCommentary(id, runningComments))
-    }
+        const client = clients.find((item) => item.id === id);
+        if (!client) return false;
+        const runningComments = client.runningComments.filter((_, position) => position !== index);
+        return runWrite(() => updateClientCommentary(id, runningComments));
+    };
 
     if (loading || (userId && !dataReady)) {
         return (
             <div className="loading-screen">
                 <div className="spinner" />
             </div>
-        )
+        );
     }
 
     if (!session) {
-        return <Login />
+        return <Login />;
     }
 
     return (
@@ -510,13 +498,12 @@ export default function App() {
                     value={editingGuide.item}
                     onClose={() => setEditingGuide(null)}
                     onSave={async (item) => {
-                        if (await runWrite(() => saveReadmeItem(item)))
-                            setEditingGuide(null)
+                        if (await runWrite(() => saveReadmeItem(item))) setEditingGuide(null);
                     }}
                 />
             )}
         </div>
-    )
+    );
 }
 
 function NavItem({
@@ -525,44 +512,29 @@ function NavItem({
     label,
     onClick,
 }: {
-    active: boolean
-    icon: "home" | "phone" | "pipeline" | "book"
-    label: string
-    onClick: () => void
+    active: boolean;
+    icon: "home" | "phone" | "pipeline" | "book";
+    label: string;
+    onClick: () => void;
 }) {
     return (
         <button className={`nav-item ${active ? "active" : ""}`} onClick={onClick}>
             <Icon name={icon} />
             <span>{label}</span>
         </button>
-    )
+    );
 }
 
-function Home({
-    clients,
-    onNavigate,
-}: {
-    clients: Client[]
-    onNavigate: (page: Page) => void
-}) {
+function Home({ clients, onNavigate }: { clients: Client[]; onNavigate: (page: Page) => void }) {
     const callsMade = clients.filter(
-        (client) =>
-            client.called.toLowerCase() === "yes" ||
-            client.pipeline.coldCall === "done",
-    ).length
-    const callPercentage = Math.round(
-        (callsMade / Math.max(clients.length, 1)) * 100,
-    )
+        (client) => client.called.toLowerCase() === "yes" || client.pipeline.coldCall === "done",
+    ).length;
+    const callPercentage = Math.round((callsMade / Math.max(clients.length, 1)) * 100);
     const sold = clients.filter(
-        (client) =>
-            client.pipeline.sold === "done" ||
-            client.outcome.toLowerCase() === "sold",
-    ).length
-    const revenue = clients.reduce(
-        (total, client) => total + (client.paid ?? 0),
-        0,
-    )
-    const recentProspects = clients.slice(0, 5)
+        (client) => client.pipeline.sold === "done" || client.outcome.toLowerCase() === "sold",
+    ).length;
+    const revenue = clients.reduce((total, client) => total + (client.paid ?? 0), 0);
+    const recentProspects = clients.slice(0, 5);
 
     return (
         <>
@@ -578,8 +550,8 @@ function Home({
                         <em>all in one place.</em>
                     </h1>
                     <p>
-                        Track every conversation from first research to final payment, and
-                        keep your next opportunity in clear view.
+                        Track every conversation from first research to final payment, and keep your
+                        next opportunity in clear view.
                     </p>
                     <div className="hero-actions">
                         <Button onClick={() => onNavigate("call-list")}>
@@ -624,8 +596,8 @@ function Home({
                     <span>Sales made</span>
                     <strong>{sold}</strong>
                     <p>
-                        {clients.length ? Math.round((sold / clients.length) * 100) : 0}%
-                        conversion overall
+                        {clients.length ? Math.round((sold / clients.length) * 100) : 0}% conversion
+                        overall
                     </p>
                 </article>
             </div>
@@ -661,8 +633,8 @@ function Home({
                     <span>Keep momentum</span>
                     <h2>Work the list in order.</h2>
                     <p>
-                        Research each prospect before making the call. Later pipeline stages
-                        unlock as each step is completed.
+                        Research each prospect before making the call. Later pipeline stages unlock
+                        as each step is completed.
                     </p>
                     <Button onClick={() => onNavigate("pipeline")}>
                         Continue pipeline <Icon name="chevron" size={15} />
@@ -670,7 +642,7 @@ function Home({
                 </aside>
             </div>
         </>
-    )
+    );
 }
 
 function formatMoney(value: number) {
@@ -678,7 +650,7 @@ function formatMoney(value: number) {
         style: "currency",
         currency: "GBP",
         maximumFractionDigits: value % 1 ? 2 : 0,
-    }).format(value)
+    }).format(value);
 }
 
 function CallList({
@@ -687,32 +659,27 @@ function CallList({
     onDelete,
     onAdd,
 }: {
-    clients: Client[]
-    onEdit: (client: Client) => void
-    onDelete: (id: string) => void
-    onAdd: () => void
+    clients: Client[];
+    onEdit: (client: Client) => void;
+    onDelete: (id: string) => void;
+    onAdd: () => void;
 }) {
-    const [query, setQuery] = useState("")
-    const [priority, setPriority] = useState("All")
+    const [query, setQuery] = useState("");
+    const [priority, setPriority] = useState("All");
     const filtered = useMemo(
         () =>
             clients.filter((client) => {
                 const haystack =
-                    `${client.business} ${client.address} ${client.phone}`.toLowerCase()
+                    `${client.business} ${client.address} ${client.phone}`.toLowerCase();
                 return (
                     haystack.includes(query.toLowerCase()) &&
                     (priority === "All" || client.priority === priority)
-                )
+                );
             }),
         [clients, query, priority],
-    )
-    const called = clients.filter(
-        (client) => client.called.toLowerCase() === "yes",
-    ).length
-    const revenue = clients.reduce(
-        (total, client) => total + (client.paid ?? 0),
-        0,
-    )
+    );
+    const called = clients.filter((client) => client.called.toLowerCase() === "yes").length;
+    const revenue = clients.reduce((total, client) => total + (client.paid ?? 0), 0);
 
     return (
         <>
@@ -737,11 +704,7 @@ function CallList({
                     value={called}
                     meta={`${clients.length - called} still to contact`}
                 />
-                <StatCard
-                    label="Revenue"
-                    value={formatMoney(revenue)}
-                    meta="Total amount paid"
-                />
+                <StatCard label="Revenue" value={formatMoney(revenue)} meta="Total amount paid" />
             </div>
             <section className="panel">
                 <div className="toolbar">
@@ -839,8 +802,8 @@ function CallList({
                                                 className="row-delete"
                                                 aria-label={`Delete ${client.business}`}
                                                 onClick={(event) => {
-                                                    event.stopPropagation()
-                                                    onDelete(client.id)
+                                                    event.stopPropagation();
+                                                    onDelete(client.id);
                                                 }}
                                             >
                                                 <Icon name="trash" size={16} />
@@ -861,22 +824,22 @@ function CallList({
                 </div>
             </section>
         </>
-    )
+    );
 }
 
 function CellStatus({ value }: { value: string }) {
-    if (!value) return <span className="muted">Not set</span>
+    if (!value) return <span className="muted">Not set</span>;
     const tone = /yes|checked|done|no site/i.test(value)
         ? "positive"
         : /wrong|no$/i.test(value)
-            ? "negative"
-            : "neutral"
+          ? "negative"
+          : "neutral";
     return (
         <span className={`cell-status ${tone}`}>
             <span />
             {value}
         </span>
-    )
+    );
 }
 
 const commentStamp = (date: Date) =>
@@ -886,7 +849,7 @@ const commentStamp = (date: Date) =>
         year: "numeric",
         hour: "2-digit",
         minute: "2-digit",
-    })
+    });
 
 function CommentaryModal({
     client,
@@ -894,21 +857,21 @@ function CommentaryModal({
     onDeleteComment,
     onClose,
 }: {
-    client: Client
-    onAddComment: (id: string, comment: string) => Promise<boolean>
-    onDeleteComment: (id: string, index: number) => Promise<boolean>
-    onClose: () => void
+    client: Client;
+    onAddComment: (id: string, comment: string) => Promise<boolean>;
+    onDeleteComment: (id: string, index: number) => Promise<boolean>;
+    onClose: () => void;
 }) {
-    const [draft, setDraft] = useState("")
-    const [saving, setSaving] = useState(false)
+    const [draft, setDraft] = useState("");
+    const [saving, setSaving] = useState(false);
     const submit = async (event: FormEvent) => {
-        event.preventDefault()
-        const comment = draft.trim()
-        if (!comment) return
-        setSaving(true)
-        if (await onAddComment(client.id, comment)) setDraft("")
-        setSaving(false)
-    }
+        event.preventDefault();
+        const comment = draft.trim();
+        if (!comment) return;
+        setSaving(true);
+        if (await onAddComment(client.id, comment)) setDraft("");
+        setSaving(false);
+    };
     return (
         <div
             className="modal-backdrop"
@@ -971,24 +934,18 @@ function CommentaryModal({
                 )}
             </div>
         </div>
-    )
+    );
 }
 
-function CommentaryCell({
-    client,
-    onOpen,
-}: {
-    client: Client
-    onOpen: () => void
-}) {
-    const count = client.runningComments.length
+function CommentaryCell({ client, onOpen }: { client: Client; onOpen: () => void }) {
+    const count = client.runningComments.length;
     return (
         <td>
             <Button variant="secondary" className="commentary-open" onClick={onOpen}>
                 {count ? `Comments (${count})` : "Add comment"}
             </Button>
         </td>
-    )
+    );
 }
 
 function Pipeline({
@@ -998,27 +955,25 @@ function Pipeline({
     onDeleteComment,
     onEdit,
 }: {
-    clients: Client[]
-    onUpdate: (id: string, stage: Stage, state: StageState) => void
-    onAddComment: (id: string, comment: string) => Promise<boolean>
-    onDeleteComment: (id: string, index: number) => Promise<boolean>
-    onEdit: (client: Client) => void
+    clients: Client[];
+    onUpdate: (id: string, stage: Stage, state: StageState) => void;
+    onAddComment: (id: string, comment: string) => Promise<boolean>;
+    onDeleteComment: (id: string, index: number) => Promise<boolean>;
+    onEdit: (client: Client) => void;
 }) {
-    const [query, setQuery] = useState("")
-    const [commentaryId, setCommentaryId] = useState<string | null>(null)
-    const commentaryClient = clients.find((client) => client.id === commentaryId)
+    const [query, setQuery] = useState("");
+    const [commentaryId, setCommentaryId] = useState<string | null>(null);
+    const commentaryClient = clients.find((client) => client.id === commentaryId);
     const filtered = clients.filter((client) =>
         client.business.toLowerCase().includes(query.toLowerCase()),
-    )
-    const sold = clients.filter(
-        (client) => client.pipeline.sold === "done",
-    ).length
+    );
+    const sold = clients.filter((client) => client.pipeline.sold === "done").length;
     const active = clients.filter((client) =>
         Object.values(client.pipeline).some((state) => state === "pending"),
-    ).length
+    ).length;
     const rejected = clients.filter((client) =>
         Object.values(client.pipeline).some((state) => state === "rejected"),
-    ).length
+    ).length;
     return (
         <>
             <PageHeader
@@ -1037,11 +992,7 @@ function Pipeline({
                     value={sold}
                     meta={`${Math.round((sold / Math.max(clients.length, 1)) * 100)}% of all prospects`}
                 />
-                <StatCard
-                    label="Rejected"
-                    value={rejected}
-                    meta="Needs review or closure"
-                />
+                <StatCard label="Rejected" value={rejected} meta="Needs review or closure" />
             </div>
             <section className="panel">
                 <div className="toolbar pipeline-toolbar">
@@ -1090,7 +1041,7 @@ function Pipeline({
                                     {stages.map((stage, index) => {
                                         const locked =
                                             index > 0 &&
-                                            client.pipeline[stages[index - 1].key] !== "done"
+                                            client.pipeline[stages[index - 1].key] !== "done";
                                         return (
                                             <td key={stage.key}>
                                                 <select
@@ -1100,10 +1051,12 @@ function Pipeline({
                                                             ? `Complete ${stages[index - 1].label} first`
                                                             : undefined
                                                     }
-                                                    className={`stage-select state-${client.pipeline[stage.key]} ${locked ? "stage-locked" : ""
-                                                        }`}
-                                                    aria-label={`${client.business}: ${stage.label}${locked ? " (locked)" : ""
-                                                        }`}
+                                                    className={`stage-select state-${client.pipeline[stage.key]} ${
+                                                        locked ? "stage-locked" : ""
+                                                    }`}
+                                                    aria-label={`${client.business}: ${stage.label}${
+                                                        locked ? " (locked)" : ""
+                                                    }`}
                                                     value={client.pipeline[stage.key]}
                                                     onChange={(event) =>
                                                         onUpdate(
@@ -1120,7 +1073,7 @@ function Pipeline({
                                                     ))}
                                                 </select>
                                             </td>
-                                        )
+                                        );
                                     })}
                                     <CommentaryCell
                                         client={client}
@@ -1141,7 +1094,7 @@ function Pipeline({
                 />
             )}
         </>
-    )
+    );
 }
 
 function ReadmePage({
@@ -1149,9 +1102,9 @@ function ReadmePage({
     items,
     onEdit,
 }: {
-    clients: Client[]
-    items: ReadmeItem[]
-    onEdit: (index: number) => void
+    clients: Client[];
+    items: ReadmeItem[];
+    onEdit: (index: number) => void;
 }) {
     return (
         <>
@@ -1170,8 +1123,8 @@ function ReadmePage({
                             <span>Polaris workspace guide</span>
                             <h2>Turn local conversations into lasting clients.</h2>
                             <p>
-                                Start with priority A, verify each business online, then keep
-                                every call and outcome recorded in one place.
+                                Start with priority A, verify each business online, then keep every
+                                call and outcome recorded in one place.
                             </p>
                         </div>
                     </div>
@@ -1214,14 +1167,14 @@ function ReadmePage({
                     <div className="summary-tip">
                         <Icon name="map" />
                         <p>
-                            <strong>Local focus</strong>Businesses are centred around
-                            London and the Greater London Area.
+                            <strong>Local focus</strong>Businesses are centred around London and the
+                            Greater London Area.
                         </p>
                     </div>
                 </aside>
             </div>
         </>
-    )
+    );
 }
 
 function Field({
@@ -1229,16 +1182,16 @@ function Field({
     children,
     wide = false,
 }: {
-    label: string
-    children: ReactNode
-    wide?: boolean
+    label: string;
+    children: ReactNode;
+    wide?: boolean;
 }) {
     return (
         <label className={`field ${wide ? "field-wide" : ""}`}>
             <span>{label}</span>
             {children}
         </label>
-    )
+    );
 }
 
 function ClientModal({
@@ -1248,22 +1201,22 @@ function ClientModal({
     onDelete,
     onClose,
 }: {
-    client: Client
-    isExisting: boolean
-    onSave: (client: Client) => void
-    onDelete: (id: string) => void
-    onClose: () => void
+    client: Client;
+    isExisting: boolean;
+    onSave: (client: Client) => void;
+    onDelete: (id: string) => void;
+    onClose: () => void;
 }) {
     const [draft, setDraft] = useState<Client>({
         ...client,
         pipeline: { ...client.pipeline },
-    })
+    });
     const set = (key: keyof Client, value: string | number | null) =>
-        setDraft((current) => ({ ...current, [key]: value }))
+        setDraft((current) => ({ ...current, [key]: value }));
     const submit = (event: FormEvent) => {
-        event.preventDefault()
-        if (draft.business.trim()) onSave(draft)
-    }
+        event.preventDefault();
+        if (draft.business.trim()) onSave(draft);
+    };
     return (
         <div
             className="modal-backdrop"
@@ -1417,7 +1370,7 @@ function ClientModal({
                 </form>
             </div>
         </div>
-    )
+    );
 }
 
 function GuideModal({
@@ -1425,11 +1378,11 @@ function GuideModal({
     onSave,
     onClose,
 }: {
-    value: ReadmeItem
-    onSave: (item: ReadmeItem) => void
-    onClose: () => void
+    value: ReadmeItem;
+    onSave: (item: ReadmeItem) => void;
+    onClose: () => void;
 }) {
-    const [draft, setDraft] = useState(value)
+    const [draft, setDraft] = useState(value);
     return (
         <div
             className="modal-backdrop"
@@ -1448,8 +1401,8 @@ function GuideModal({
                 </div>
                 <form
                     onSubmit={(event) => {
-                        event.preventDefault()
-                        onSave(draft)
+                        event.preventDefault();
+                        onSave(draft);
                     }}
                 >
                     <div className="form-grid">
@@ -1483,5 +1436,5 @@ function GuideModal({
                 </form>
             </div>
         </div>
-    )
+    );
 }
